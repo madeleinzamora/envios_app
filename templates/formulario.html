@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de Envíos</title>
+</head>
+<body>
+    <h2>Formulario de Envío</h2>
+    <form id="envioForm">
+        <label>Cliente ID:</label>
+        <input type="text" name="id_cliente"><br><br>
+
+        <label>Estado:</label>
+        <select id="estadoSelect" name="id_estado"></select><br><br>
+
+        <label>Ciudad:</label>
+        <select id="ciudadSelect" name="id_ciudad"></select><br><br>
+
+        <label>Descripción:</label>
+        <input type="text" name="descripcion"><br><br>
+
+        <button type="submit">Registrar Envío</button>
+    </form>
+
+    <div id="mensaje" style="margin-top: 20px; font-weight: bold;"></div>
+
+    <script>
+        // Cargar estados al iniciar
+        window.onload = function () {
+            fetch('/estados')
+                .then(response => response.json())
+                .then(data => {
+                    const estadoSelect = document.getElementById('estadoSelect');
+                    data.forEach(estado => {
+                        let option = document.createElement('option');
+                        option.value = estado.id;
+                        option.text = estado.nombre;
+                        estadoSelect.add(option);
+                    });
+                });
+        };
+
+        // Cargar ciudades cuando se selecciona un estado
+        document.getElementById('estadoSelect').addEventListener('change', function () {
+            const id_estado = this.value;
+            fetch('/ciudades', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `id_estado=${id_estado}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                const ciudadSelect = document.getElementById('ciudadSelect');
+                ciudadSelect.innerHTML = '';
+                data.forEach(ciudad => {
+                    let option = document.createElement('option');
+                    option.value = ciudad.id;
+                    option.text = ciudad.nombre;
+                    ciudadSelect.add(option);
+                });
+            });
+        });
+
+        // Enviar formulario
+        document.getElementById('envioForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/registrar', {
+                method: 'POST',
+                body: new URLSearchParams(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('mensaje').innerText = data.mensaje;
+            });
+        });
+    </script>
+</body>
+</html>
